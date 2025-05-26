@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use aws_sdk_s3::Client;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AppState {

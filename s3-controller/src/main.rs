@@ -1,7 +1,7 @@
 use appstate::AppState;
 use aws_config::{self, ConfigLoader}; // Standard way to bring aws_config into scope
 use aws_sdk_s3::{primitives::DateTime, Client};
-use axum::{extract::State, http::Method, routing::get, Json, Router};
+use axum::{extract::State, http::Method, routing::get, Router};
 use log::error;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -26,40 +26,7 @@ struct ListKeysParams {
 
 const BUCKET_NAME: &str = "dz-bucket-1234"; // Your bucket name
 
-// Handler function to list S3 Keys
-async fn list_s3_keys(
-    State(state): State<appstate::AppState>,
-) -> Result<Json<Vec<keyinfo::KeyInfo>>, String> {
-    let start = Instant::now();
-    let mut all_keys: Vec<keyinfo::KeyInfo> = Vec::new();
-    let mut response = state
-        .s3
-        .list_objects_v2() //
-        .bucket(&state.bucket)
-        .into_paginator()
-        .send();
-
-    while let Some(result) = response.next().await {
-        match result {
-            Ok(out) => match out.contents {
-                Some(objects) => {
-                    for obj in objects {
-                        pushentry::push_entry(&mut all_keys, obj);
-                    }
-                }
-                None => {
-                    error!("No objects");
-                }
-            },
-            Err(e) => {
-                error!("Fail: {:?}", e)
-            }
-        }
-    }
-    let out = Json(all_keys);
-    println!("Took: {} ms", start.elapsed().as_millis());
-    Ok(out)
-}
+mod listkeys;
 
 #[tokio::main]
 async fn main() {
@@ -81,7 +48,7 @@ async fn main() {
 
             // Build the application with the new route
             let app = Router::new()
-                .route("/api/keys", get(list_s3_keys)) //
+                .route("/api/keys", get(listkeys::list_s3_keys)) //
                 .with_state(state.clone())
                 .layer(cors);
 
