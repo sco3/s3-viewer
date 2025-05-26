@@ -1,6 +1,7 @@
 use aws_config::{self, ConfigLoader}; // Standard way to bring aws_config into scope
 use aws_sdk_s3::{Client, Error};
 use axum::{Json, Router, extract::Query, http::Method, routing::get};
+use log::error;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
@@ -31,11 +32,34 @@ async fn list_s3_keys() -> Result<Json<Vec<KeyInfo>>, String> {
     let loader = ConfigLoader::default();
 
     let config = loader.load().await;
-    
+
     let s3 = Client::new(&config);
 
-    println!("client: {}",s3)
+    let mut response = s3
+        .list_objects_v2()
+        .bucket("dz-bucket-1234")
+        .into_paginator()
+        .send();
 
+    while let Some(result) = response.next().await {
+        match result {
+            Ok(out) => match out.contents {
+                Some(objects) => {
+                    for obj in objects {
+                        if let Some(name) = obj.key {
+                            println!("key {}", name);
+                        }
+                    }
+                }
+                None => {
+                    error!("No objects");
+                }
+            },
+            Err(e) => {
+                error!("Fail: {:?}", e)
+            }
+        }
+    }
 
     let all_keys: Vec<KeyInfo> = Vec::new();
 
