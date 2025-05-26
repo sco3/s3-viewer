@@ -1,4 +1,5 @@
-// (Optional) Query parameters - we'll activate these later
+use serde::Deserialize;
+
 #[derive(Deserialize, Debug)]
 pub(crate) struct ListKeysParams {
     pub(crate) prefix: Option<String>,
