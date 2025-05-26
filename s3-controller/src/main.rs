@@ -1,3 +1,4 @@
+use appstate::AppState;
 use aws_config::{self, ConfigLoader}; // Standard way to bring aws_config into scope
 use aws_sdk_s3::{primitives::DateTime, Client};
 use axum::{extract::State, http::Method, routing::get, Json, Router};
@@ -11,16 +12,9 @@ use std::{
 };
 use tower_http::cors::{Any, CorsLayer};
 
-// Define a struct for Key information
-#[derive(Serialize, Clone, Debug)]
-struct KeyInfo {
-    key: String,
-    last_modified: String,
-    size: i64,
-    // Store original DateTime for sorting
-    #[serde(skip_serializing)] // Don't send this in JSON
-    last_modified_dt: aws_sdk_s3::primitives::DateTime,
-}
+mod appstate;
+mod keyinfo;
+mod pushentry;
 
 // (Optional) Query parameters - we'll activate these later
 #[derive(Deserialize, Debug)]
@@ -33,12 +27,15 @@ struct ListKeysParams {
 const BUCKET_NAME: &str = "dz-bucket-1234"; // Your bucket name
 
 // Handler function to list S3 Keys
-async fn list_s3_keys(State(s3): State<Arc<Client>>) -> Result<Json<Vec<KeyInfo>>, String> {
+async fn list_s3_keys(
+    State(state): State<appstate::AppState>,
+) -> Result<Json<Vec<keyinfo::KeyInfo>>, String> {
     let start = Instant::now();
-    let mut all_keys: Vec<KeyInfo> = Vec::new();
-    let mut response = s3
-        .list_objects_v2()
-        .bucket(BUCKET_NAME)
+    let mut all_keys: Vec<keyinfo::KeyInfo> = Vec::new();
+    let mut response = state
+        .s3
+        .list_objects_v2() //
+        .bucket(&state.bucket)
         .into_paginator()
         .send();
 
@@ -47,15 +44,7 @@ async fn list_s3_keys(State(s3): State<Arc<Client>>) -> Result<Json<Vec<KeyInfo>
             Ok(out) => match out.contents {
                 Some(objects) => {
                     for obj in objects {
-                        if let Some(name) = obj.key {
-                            let info = KeyInfo {
-                                key: name,
-                                last_modified: "".into(),
-                                size: 0,
-                                last_modified_dt: DateTime::from_millis(0),
-                            };
-                            all_keys.push(info);
-                        }
+                        pushentry::push_entry(&mut all_keys, obj);
                     }
                 }
                 None => {
@@ -68,7 +57,7 @@ async fn list_s3_keys(State(s3): State<Arc<Client>>) -> Result<Json<Vec<KeyInfo>
         }
     }
     let out = Json(all_keys);
-    println!("Took: {}", start.elapsed().as_millis());
+    println!("Took: {} ms", start.elapsed().as_millis());
     Ok(out)
 }
 
@@ -81,8 +70,11 @@ async fn main() {
     let s3_result = catch_unwind(AssertUnwindSafe(|| Client::new(&config)));
     match s3_result {
         Ok(s3) => {
-            let shared_s3 = Arc::new(s3);
-            // CORS layer
+            let state = AppState {
+                s3: Arc::new(s3),
+                bucket: BUCKET_NAME.to_string(),
+            };
+
             let cors = CorsLayer::new()
                 .allow_methods([Method::GET, Method::POST])
                 .allow_origin(Any);
@@ -90,7 +82,7 @@ async fn main() {
             // Build the application with the new route
             let app = Router::new()
                 .route("/api/keys", get(list_s3_keys)) //
-                .with_state(shared_s3)
+                .with_state(state.clone())
                 .layer(cors);
 
             // Run it on port 3000
