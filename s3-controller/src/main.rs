@@ -2,6 +2,7 @@ use appstate::AppState;
 use aws_config::{self, ConfigLoader};
 use aws_sdk_s3::Client;
 use axum::{http::Method, routing::get, Router};
+use tower_http::services::ServeDir;
 use log::error;
 
 use std::{
@@ -47,7 +48,11 @@ async fn main() {
     let app = Router::new()
         .route("/api/keys", get(listkeys::list_s3_keys)) //
         .with_state(state.clone())
-        .layer(cors);
+        .layer(cors)
+        .fallback_service(
+            ServeDir::new("../s3-view/dist") //
+                .append_index_html_on_directories(true),
+        );
 
     // Run it on port 3000
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
