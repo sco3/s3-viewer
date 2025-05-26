@@ -1,4 +1,4 @@
-use crate::components::keyitem::KeyItem;
+// src/components/keylist.rs
 use crate::models::keyinfo::KeyInfo;
 use yew::prelude::*;
 
@@ -10,19 +10,37 @@ pub struct KeyListProps {
 #[function_component(KeyList)]
 pub fn key_list(props: &KeyListProps) -> Html {
     html! {
-        <table>
-            <thead>
-                <tr>
-                    <th>{ "Key" }</th>
-                    <th>{ "Last Modified" }</th>
-                    <th>{ "Size (bytes)" }</th>
-                </tr>
-            </thead>
-            <tbody>
-                { for props.keys.iter().map(|key| html! {
-                    <KeyItem key={key.key.clone()} key_info={key.clone()} />
-                }) }
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto border-collapse">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            { "Key" }
+                        </th>
+                        <th class="border border-gray-300 px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            { "Last Modified" }
+                        </th>
+                        <th class="border border-gray-300 px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            { "Size (bytes)" }
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    { for props.keys.iter().map(|key| html! {
+                        <tr class="hover:bg-gray-50 even:bg-white odd:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                { &key.key }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                { &key.last_modified }
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">
+                                { &key.size }
+                            </td>
+                        </tr>
+                    }) }
+                </tbody>
+            </table>
+        </div>
     }
 }
