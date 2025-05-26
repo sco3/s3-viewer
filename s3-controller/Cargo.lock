@@ -1966,6 +1966,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-s3",
  "axum",
+ "log",
  "serde",
  "serde_json",
  "tokio",
