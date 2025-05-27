@@ -1,0 +1,5 @@
+#!/usr/bin/env -S bash
+
+set -xueo pipefail
+
+ln -sf ../s3-view/dist static
