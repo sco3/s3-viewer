@@ -13,22 +13,26 @@ use std::{
 use tower_http::cors::{Any, CorsLayer};
 
 mod appstate;
+mod args;
 mod keyinfo;
+mod listkeyparam;
 mod pushentry;
 
-mod listkeyparam;
-
-const BUCKET_NAME: &str = "dz-bucket-1234";
+//const BUCKET_NAME: &str = "dz-bucket-1234";
 use include_dir::{include_dir, Dir};
 
-const STATIC: Dir = include_dir!("static");
-
+use crate::args::Args;
+use clap::Parser;
 use tempfile::TempDir;
 
 mod listkeys;
 
+const STATIC: Dir = include_dir!("static");
+
 #[tokio::main]
 async fn main() {
+    let args = Args::parse();
+
     let config = ConfigLoader::default().load().await;
     let s3 = match catch_unwind(
         AssertUnwindSafe(|| Client::new(&config)), //
@@ -42,10 +46,10 @@ async fn main() {
 
     let state = AppState {
         s3: Arc::new(s3),
-        bucket: BUCKET_NAME.to_string(),
+        bucket: args.bucket,
     };
 
-    let cors = CorsLayer::new()
+    let _cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any);
 
