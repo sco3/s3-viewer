@@ -7,9 +7,11 @@ edition = "2021"
 aws-config = "1.6.3"
 aws-sdk-s3 = {version="1.88.0",features = ["behavior-version-latest"]}
 axum = "0.8.4"
+include_dir = "0.7.4"
 log = "0.4.27"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
+tempfile = "3.20.0"
 tokio = { version = "1.45.1", features = ["full"] }
 tower-http = { version = "0.6.4", features = ["cors","fs"] }
 yew-table = "0.1.2"

@@ -2,8 +2,8 @@ use appstate::AppState;
 use aws_config::{self, ConfigLoader};
 use aws_sdk_s3::Client;
 use axum::{http::Method, routing::get, Router};
-use tower_http::services::ServeDir;
 use log::error;
+use tower_http::services::ServeDir;
 
 use std::{
     net::SocketAddr,
@@ -19,6 +19,11 @@ mod pushentry;
 mod listkeyparam;
 
 const BUCKET_NAME: &str = "dz-bucket-1234";
+use include_dir::{include_dir, Dir};
+
+const STATIC: Dir = include_dir!("static");
+
+use tempfile::TempDir;
 
 mod listkeys;
 
@@ -44,18 +49,21 @@ async fn main() {
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any);
 
+    let temp_dir = TempDir::new().expect("Failed to create temp dir");
+    STATIC
+        .extract(temp_dir.path())
+        .expect("Failed to extract static files");
+
     // Build the application with the new route
     let app = Router::new()
         .route("/api/keys", get(listkeys::list_s3_keys)) //
         .with_state(state.clone())
-        .layer(cors)
         .fallback_service(
-            ServeDir::new("../s3-view/dist") //
+            ServeDir::new(temp_dir.path()) //
                 .append_index_html_on_directories(true),
         );
 
-    // Run it on port 3000
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 5000));
     println!("Backend server listening on {}", addr);
 
     axum::serve(
