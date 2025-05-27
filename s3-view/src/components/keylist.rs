@@ -30,8 +30,8 @@ pub fn key_list(props: &KeyListProps) -> Html {
 
                           <tr class="hover:bg-gray-50 even:bg-white odd:bg-gray-50">
 	                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-	                            <a href={format!("/view/{}", key.key)}>
-	                                { &key.key }
+	                            	<a href={format!("/api/view/{}", key.key)}>
+	                                	{ &key.key }
 	                                </a>
 	                            </td>
 	                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">

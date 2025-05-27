@@ -5,5 +5,4 @@ use std::sync::Arc;
 pub struct AppState {
     pub s3: Arc<Client>,
     pub bucket: String,
-	pub region: String,
 }

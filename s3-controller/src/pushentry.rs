@@ -11,8 +11,8 @@ pub(crate) fn push_entry(all_keys: &mut Vec<KeyInfo>, obj: aws_sdk_s3::types::Ob
     let info = KeyInfo {
         key: name,
         last_modified: last_modi.to_string(),
-        size: size,
-        last_modified_dt: last_modi,
+        size,
+        _last_modified_dt: last_modi,
     };
     all_keys.push(info);
 }

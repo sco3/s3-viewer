@@ -2249,6 +2249,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
+ "stdweb",
  "tempfile",
  "tokio",
  "tower-http",

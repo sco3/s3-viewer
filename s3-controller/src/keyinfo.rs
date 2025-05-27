@@ -7,5 +7,5 @@ pub struct KeyInfo {
     pub last_modified: String,
     pub size: i64,
     #[serde(skip_serializing)]
-    pub last_modified_dt: DateTime,
+    pub _last_modified_dt: DateTime,
 }

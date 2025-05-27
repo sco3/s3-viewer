@@ -16,7 +16,9 @@ mod appstate;
 mod args;
 mod keyinfo;
 mod listkeyparam;
+mod listkeys;
 mod pushentry;
+mod viewkey;
 
 //const BUCKET_NAME: &str = "dz-bucket-1234";
 use include_dir::{include_dir, Dir};
@@ -24,8 +26,6 @@ use include_dir::{include_dir, Dir};
 use crate::args::Args;
 use clap::Parser;
 use tempfile::TempDir;
-
-mod listkeys;
 
 const STATIC: Dir = include_dir!("static");
 
@@ -52,7 +52,6 @@ async fn main() {
     let state = AppState {
         s3: Arc::new(s3),
         bucket: args.bucket,
-        region: args.region,
     };
 
     let _cors = CorsLayer::new()
@@ -69,6 +68,10 @@ async fn main() {
         .route(
             "/api/keys",                 //
             get(listkeys::list_s3_keys), //
+        )
+        .route(
+            "/api/view/{*key}",        //
+            get(viewkey::view_s3_key), //
         )
         .with_state(state.clone())
         .fallback_service(

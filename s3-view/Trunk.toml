@@ -3,6 +3,6 @@ dist = "dist"
 public_url = "/"
 
 
-[[copy]]
-source = "src/assets/css/tailwind.min.css"
-destination = "dist/tailwind.min.css"
+#[[copy]]
+#source = "src/assets/css/tailwind.min.css"
+#destination = "dist/tailwind.min.css"
