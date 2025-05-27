@@ -27,17 +27,21 @@ pub fn key_list(props: &KeyListProps) -> Html {
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     { for props.keys.iter().map(|key| html! {
-                        <tr class="hover:bg-gray-50 even:bg-white odd:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                { &key.key }
+
+                          <tr class="hover:bg-gray-50 even:bg-white odd:bg-gray-50">
+	                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+	                            <a href={format!("/view/{}", key.key)}>
+	                                { &key.key }
+	                                </a>
+	                            </td>
+	                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+	                                { &key.last_modified }
+	                            </td>
+	                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">
+	                                { &key.size }
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                { &key.last_modified }
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">
-                                { &key.size }
-                            </td>
-                        </tr>
+                          </tr>
+
                     }) }
                 </tbody>
             </table>

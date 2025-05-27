@@ -38,6 +38,7 @@ async fn main() {
     .or_default_provider();
 
     let config = ConfigLoader::default().region(region_provider).load().await;
+
     let s3 = match catch_unwind(
         AssertUnwindSafe(|| Client::new(&config)), //
     ) {
@@ -65,7 +66,10 @@ async fn main() {
 
     // Build the application with the new route
     let app = Router::new()
-        .route("/api/keys", get(listkeys::list_s3_keys)) //
+        .route(
+            "/api/keys",                 //
+            get(listkeys::list_s3_keys), //
+        )
         .with_state(state.clone())
         .fallback_service(
             ServeDir::new(temp_dir.path()) //
