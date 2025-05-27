@@ -1,0 +1,7 @@
+#!/usr/bin/env -S bash
+
+set -xueo pipefail
+
+source ~/.local/.env-s3-viewer
+
+cargo run -- -b $BUCKET -r eu-west-1

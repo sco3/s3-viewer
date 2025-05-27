@@ -1,5 +1,5 @@
 use appstate::AppState;
-use aws_config::{self, ConfigLoader};
+use aws_config::{self, meta::region::RegionProviderChain, ConfigLoader, Region};
 use aws_sdk_s3::Client;
 use axum::{http::Method, routing::get, Router};
 use log::error;
@@ -32,8 +32,12 @@ const STATIC: Dir = include_dir!("static");
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
+    let region_provider = RegionProviderChain::first_try(
+        Some(Region::new(args.region.clone())), //
+    )
+    .or_default_provider();
 
-    let config = ConfigLoader::default().load().await;
+    let config = ConfigLoader::default().region(region_provider).load().await;
     let s3 = match catch_unwind(
         AssertUnwindSafe(|| Client::new(&config)), //
     ) {
@@ -47,6 +51,7 @@ async fn main() {
     let state = AppState {
         s3: Arc::new(s3),
         bucket: args.bucket,
+        region: args.region,
     };
 
     let _cors = CorsLayer::new()
