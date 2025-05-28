@@ -22,15 +22,25 @@ pub(crate) async fn view_s3_key(
     {
         Ok(resp) => {
             println!("Key fetched successfully: {}", key);
-            let body = resp.body.collect().await.unwrap().into_bytes();
 
-            println!("Took: {} ms", start.elapsed().as_millis());
-
-            return Response::builder().status(200).body(body.into()).unwrap();
+            match resp.body.collect().await {
+                Ok(body) => {
+                    println!("Get object took: {} ms", start.elapsed().as_millis());
+                    Response::builder()
+                        .status(200)
+                        .body(body.into_bytes().into())
+                        .unwrap()
+                }
+                Err(e) => {
+                    let msg = format!("Error collecting body: {}", e);
+                    Response::builder().status(500).body(msg.into()).unwrap()
+                }
+            }
         }
         Err(e) => {
-            let msg = format!("Error fetching key: {}", e);
-            return Response::builder().status(500).body(msg.into()).unwrap();
+            let msg = format!("Error fetching key {}: {}", key, e);
+            eprintln!("{}", msg);
+            Response::builder().status(500).body(msg.into()).unwrap()
         }
     }
 }
