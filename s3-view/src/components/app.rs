@@ -1,4 +1,4 @@
-use gloo_console; // Import gloo_console for error logging
+use gloo_console::log;
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -8,35 +8,34 @@ use crate::models::keyinfo::KeyInfo;
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let keys = use_state(Vec::<KeyInfo>::new); // Changed to a closure returning a new Vec
+    let keys: UseStateHandle<Vec<KeyInfo>> = use_state(Vec::new);
 
-    let keys_setter = keys.clone();
-    use_effect_with((), move |_| {
-        spawn_local(async move {
-            match fetch_keys().await {
-                Ok(fetched_keys) => {
-                    keys_setter.set(fetched_keys); // Use the setter
+    {
+        let keys = keys.clone();
+        use_effect_with((), move |_| {
+            spawn_local(async move {
+                match fetch_keys().await {
+                    Ok(fetched_keys) => {
+                        keys.set(fetched_keys);
+                    }
+                    Err(err) => {
+                        log!(format!("Failed to fetch keys: {:?}", err));
+                    }
                 }
-                Err(err) => {
-                    gloo_console::error!(format!("Failed to fetch keys: {:?}", err));
-                }
-            }
+            });
+            || ()
         });
-        || ()
-    });
+    }
 
     html! {
-        <div>
-            <h1>{ "S3 Viewer" }</h1>
+        <div class="p-4">
+            <h1 class="text-2xl font-bold mb-4">{ "S3 Viewer" }</h1>
             <KeyList keys={(*keys).clone()} />
         </div>
     }
 }
 
-// Helper async function to fetch keys
 async fn fetch_keys() -> Result<Vec<KeyInfo>, gloo_net::Error> {
-    let resp = Request::get("/api/keys") // Use Request directly as it's imported
-        .send()
-        .await?;
+    let resp = Request::get("/api/keys").send().await?;
     resp.json::<Vec<KeyInfo>>().await
 }
