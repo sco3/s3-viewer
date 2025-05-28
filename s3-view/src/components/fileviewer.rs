@@ -64,15 +64,28 @@ pub fn file_viewer(props: &FileViewerProps) -> Html {
         let on_close = props.on_close.clone();
         Callback::from(move |_| on_close.emit(()))
     };
-
+    let href = format!("/api/view/{}", &props.file_key);
     html! {
         <div>
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-lg font-bold">{ &props.file_key }</h2>
+            <div class="flex justify-between mb-2">
+                <button
+                    class="text-xl font-bold px-2 py-1 hover:text-red-600"
+                    onclick={&on_close_click}
+                    aria-label="Close viewer" title="Close viewer">
+                    { "×" }
+                </button>
+
+                <a href={href} download=true title="Download"
+                class="text-blue-600 hover:text-blue-800"
+                >
+                    <span class="text-lg font-bold">{ &props.file_key }</span>
+
+                </a>
+                <div class="flex-grow"></div>
                 <button
                     class="text-xl font-bold px-2 py-1 hover:text-red-600"
                     onclick={on_close_click}
-                    aria-label="Close viewer"
+                    aria-label="Close viewer" title="Close viewer"
                 >
                     { "×" }
                 </button>
