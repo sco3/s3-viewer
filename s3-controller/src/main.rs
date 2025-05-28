@@ -2,6 +2,7 @@ use appstate::AppState;
 use aws_config::{self, meta::region::RegionProviderChain, ConfigLoader, Region};
 use aws_sdk_s3::Client;
 use axum::{http::Method, routing::get, Router};
+use config::get_cfg;
 use log::error;
 use tower_http::services::ServeDir;
 
@@ -14,6 +15,7 @@ use tower_http::cors::{Any, CorsLayer};
 
 mod appstate;
 mod args;
+mod config;
 mod keyinfo;
 mod listkeyparam;
 mod listkeys;
@@ -70,8 +72,12 @@ async fn main() {
             get(listkeys::list_s3_keys), //
         )
         .route(
-            "/api/view/{*key}",        //
+            "/api/view/{*key}",
             get(viewkey::view_s3_key), //
+        )
+        .route(
+            "/api/cfg/",
+            get(get_cfg), //
         )
         .with_state(state.clone())
         .fallback_service(
