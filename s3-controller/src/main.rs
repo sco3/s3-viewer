@@ -76,7 +76,7 @@ async fn main() {
             get(viewkey::view_s3_key), //
         )
         .route(
-            "/api/cfg/",
+            "/api/cfg",
             get(get_cfg), //
         )
         .with_state(state.clone())
