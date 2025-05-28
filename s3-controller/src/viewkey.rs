@@ -1,9 +1,9 @@
 use std::time::Instant;
 
-use axum::extract::{Path, State};
-use axum::response::Response;
-
 use crate::appstate::AppState;
+use axum::extract::{Path, State};
+use axum::http::header;
+use axum::response::Response;
 
 pub(crate) async fn view_s3_key(
     State(state): State<AppState>,
@@ -28,6 +28,14 @@ pub(crate) async fn view_s3_key(
                     println!("Get object took: {} ms", start.elapsed().as_millis());
                     Response::builder()
                         .status(200)
+                        .header(
+                            header::CONTENT_TYPE,
+                            "application/octet-stream", //
+                        )
+                        .header(
+                            header::CONTENT_DISPOSITION,
+                            format!(r#"attachment; filename="{}""#, key),
+                        )
                         .body(body.into_bytes().into())
                         .unwrap()
                 }
