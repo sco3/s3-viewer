@@ -65,7 +65,7 @@ pub fn key_list(props: &KeyListProps) -> Html {
                                         { &key.last_modified }
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-right">
-                                        { &key.size }
+                                        { key.size }
                                     </td>
                                 </tr>
                             }
