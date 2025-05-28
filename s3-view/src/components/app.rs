@@ -10,7 +10,7 @@ use crate::models::keyinfo::KeyInfo;
 pub fn app() -> Html {
     // Initialize keys with an empty Vec.
     // use_state accepts a closure `|| T` or a direct value `T`.
-    let keys = use_state(|| Vec::<KeyInfo>::new()); // Changed to a closure returning a new Vec
+    let keys = use_state(Vec::<KeyInfo>::new); // Changed to a closure returning a new Vec
 
     {
         // Clone the state handle for use inside the effect's closure
