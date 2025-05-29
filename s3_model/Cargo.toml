@@ -1,0 +1,11 @@
+[package]
+name = "s3-common"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+
+
+[lib]
+name = "s3_common"
+path = "src/lib.rs"
