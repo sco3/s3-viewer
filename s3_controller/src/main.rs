@@ -1,18 +1,3 @@
-use appstate::AppState;
-use aws_config::{self, meta::region::RegionProviderChain, ConfigLoader, Region};
-use aws_sdk_s3::Client;
-use axum::{http::Method, routing::get, Router};
-use config::get_cfg;
-use log::error;
-use tower_http::services::ServeDir;
-
-use std::{
-    net::SocketAddr,
-    panic::{catch_unwind, AssertUnwindSafe},
-    sync::Arc,
-};
-use tower_http::cors::{Any, CorsLayer};
-
 mod appstate;
 mod args;
 mod config;
@@ -22,7 +7,24 @@ mod listkeys;
 mod pushentry;
 mod viewkey;
 
-//const BUCKET_NAME: &str = "dz-bucket-1234";
+use appstate::AppState;
+use aws_config::{self, meta::region::RegionProviderChain, ConfigLoader, Region};
+use aws_sdk_s3::Client;
+use axum::{http::Method, routing::get, Router};
+use config::get_cfg;
+
+use log::error;
+use tower_http::services::ServeDir;
+
+use axum_server::tls_rustls::RustlsConfig;
+
+use std::{
+    net::SocketAddr,
+    panic::{catch_unwind, AssertUnwindSafe},
+    sync::Arc,
+};
+use tower_http::cors::{Any, CorsLayer};
+
 use include_dir::{include_dir, Dir};
 
 use crate::args::Args;
@@ -88,12 +90,26 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], 5000));
     println!("Backend server listening on {}", addr);
 
-    axum::serve(
-        tokio::net::TcpListener::bind(addr) //
-            .await
-            .unwrap(),
-        app,
-    )
-    .await
-    .unwrap_or_else(|e| eprintln!("Serve error: {:?}", e));
+    if args.tls {
+        match RustlsConfig::from_pem_file(args.cert_path_tls, args.key_path_tls).await {
+            Ok(config) => {
+                axum_server::bind_rustls(addr, config)
+                    .serve(app.into_make_service())
+                    .await
+                    .unwrap_or_else(|e| eprintln!("TLS Server error: {:?}", e));
+            }
+            Err(e) => {
+                eprintln!("Cannot load tls files: {}", e)
+            }
+        }
+    } else {
+        axum::serve(
+            tokio::net::TcpListener::bind(addr) //
+                .await
+                .unwrap(),
+            app,
+        )
+        .await
+        .unwrap_or_else(|e| eprintln!("Serve error: {:?}", e));
+    }
 }

@@ -7,6 +7,10 @@ use crate::appstate::AppState;
 use crate::keyinfo::KeyInfo;
 use crate::pushentry;
 
+fn last_modified_desc(a: &KeyInfo, b: &KeyInfo) -> std::cmp::Ordering {
+    b.last_modified.cmp(&a.last_modified) // descending
+}
+
 pub(crate) async fn list_s3_keys(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<KeyInfo>>, String> {
@@ -37,6 +41,8 @@ pub(crate) async fn list_s3_keys(
             }
         }
     }
+
+    all_keys.sort_by(last_modified_desc);
 
     println!("Took: {} ms", start.elapsed().as_millis());
     Ok(Json(all_keys))

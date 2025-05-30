@@ -5,7 +5,7 @@ set -xueo pipefail
 source ~/.local/.env-s3-viewer
 
 
-cd ../s3-view
+cd ../s3_view
 ./build.sh
 cd -
 
