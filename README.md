@@ -1,6 +1,6 @@
 # S3 Viewer
 
-S3 Viewer is a utility for browsing the contents of S3 buckets. It consists of a web server written in Rust using the Axum framework and a frontend application built with Yew and compiled to WebAssembly.
+S3 Viewer is an utility for browsing the contents of S3 buckets. It consists of a web server written in Rust using the Axum framework and a frontend application built with Yew and compiled to WebAssembly.
 
 ## Architecture
 
